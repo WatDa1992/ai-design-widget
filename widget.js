@@ -34,7 +34,6 @@
   document.getElementById("submit-design").onclick = async () => {
     const design = document.getElementById("design-input").value;
     const view = document.getElementById("view-picker").value;
-    const category = document.getElementById("product-category")?.textContent || category;
 
     const fullPrompt = `Generate a ${view} view design for a ${category}. Design notes: ${design}`;
 
