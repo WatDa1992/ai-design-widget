@@ -16,7 +16,7 @@
 
     <div class="controls">
       <input type="text" id="category-input" placeholder="Product Type (e.g. sneaker, hoodie)" />
-      <input type="text" placeholder="Describe your design idea (e.g. flames, floral pattern)..." id="design-prompt" />
+      <input type="text" id="design-prompt" placeholder="Describe your design (e.g. flames, floral pattern)" />
       <select id="view-selector">
         <option value="front">Front View</option>
         <option value="back">Back View</option>
@@ -32,12 +32,11 @@
   const overlay = document.getElementById("overlay-box");
 
   document.getElementById("submit-design").onclick = async () => {
-    const prompt = document.getElementById("design-prompt").value;
+    const designInput = document.getElementById("design-prompt").value.trim();
+    const categoryInput = document.getElementById("category-input").value.trim() || "product";
     const view = document.getElementById("view-selector").value;
-    const categoryInput = document.getElementById("category-input").value.trim();
-    const category = categoryInput || "product";
 
-    const fullPrompt = `A studio photo of a plain white ${category} in ${view} view. Apply this design onto the ${category}: ${prompt}. The design should be clearly printed directly onto the ${category}. Plain white background. No text, no extra objects.`;
+    const fullPrompt = `A high-quality photo of a plain white ${categoryInput} in ${view} view. Apply the following design directly onto the ${categoryInput}: ${designInput}. The ${categoryInput} should clearly show the requested design printed on it. Plain white studio background. No text, no logos, no extra props.`;
 
     overlay.innerHTML = "🎨 Generating design...";
 
