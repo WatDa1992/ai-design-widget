@@ -2,10 +2,20 @@
   const root = document.getElementById("design-assistant-root");
   if (!root) return;
 
-  const productId = root.dataset.productId || "sku-001";
-  const category = root.dataset.category || "custom product";
-  const imageUrl = root.dataset.productImage || "";
+  const productId = root.dataset.productId;
+  const category = root.dataset.category;
+  const imageUrl = root.dataset.productImage;
 
+  // Define smart prompt templates per product category
+  const promptTemplateMap = {
+    "converse-shoes": "A custom illustration printed on a pair of Converse-style canvas sneakers. Design: {prompt}. Use color: {color}. Add a {pattern} pattern.",
+    "baseball-cap": "A personalized baseball cap design. Embroider or print the following: {prompt}, using color: {color}, with a {pattern} pattern.",
+    "tshirt": "A custom t-shirt featuring: {prompt}. Main color: {color}. Pattern overlay: {pattern}.",
+    "surfboard": "A surfboard with custom painted artwork: {prompt}. Accent color: {color}, and pattern: {pattern}.",
+    "default": "A product customized with: {prompt}. Use color: {color}, with {pattern} style."
+  };
+
+  // Inject UI into DOM
   root.innerHTML = `
     <h2>🎨 Design Assistant for ${category}</h2>
     <p><strong>Product ID:</strong> ${productId}</p>
@@ -30,10 +40,12 @@
 
   const overlay = document.getElementById("overlay-box");
 
+  // Color input listener
   document.getElementById("color-picker").oninput = (e) => {
     overlay.style.backgroundColor = e.target.value;
   };
 
+  // Pattern selector listener
   document.getElementById("pattern-picker").onchange = (e) => {
     const val = e.target.value;
     const patterns = {
@@ -44,25 +56,35 @@
     overlay.style.backgroundImage = patterns[val] || "";
   };
 
+  // Submit button logic
   document.getElementById("submit-design").onclick = async () => {
-    const prompt = document.getElementById("design-prompt").value;
+    const prompt = document.getElementById("design-prompt").value.trim();
     const color = document.getElementById("color-picker").value;
-    const pattern = document.getElementById("pattern-picker").value;
-    const fullPrompt = `${prompt}. Use color: ${color}, with pattern: ${pattern}`;
+    const pattern = document.getElementById("pattern-picker").value || "no pattern";
+
+    if (!prompt) {
+      overlay.innerHTML = "⚠️ Please enter a design description.";
+      return;
+    }
+
+    // Use template based on category
+    const template = promptTemplateMap[category] || promptTemplateMap["default"];
+    const fullPrompt = template
+      .replace("{prompt}", prompt)
+      .replace("{color}", color)
+      .replace("{pattern}", pattern);
 
     overlay.innerHTML = "🎨 Generating design...";
 
     try {
       const res = await fetch("https://replicate-ai-backend.vercel.app/api/generate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: fullPrompt })
       });
 
       const data = await res.json();
-      const imageUrl = data.image;
+      const imageUrl = data?.output?.[0] || data?.image;
 
       if (imageUrl) {
         overlay.innerHTML = `<img src="${imageUrl}" alt="Generated Design" style="max-width: 100%; border-radius: 8px;" />`;
@@ -70,7 +92,7 @@
         overlay.innerHTML = "⚠️ No image returned.";
       }
     } catch (err) {
-      console.error("Error generating design:", err);
+      console.error(err);
       overlay.innerHTML = "❌ Failed to generate design.";
     }
   };
