@@ -29,6 +29,7 @@
   `;
 
   const overlay = document.getElementById("overlay-box");
+  const preview = document.getElementById("product-preview");
 
   document.getElementById("color-picker").oninput = (e) => {
     overlay.style.backgroundColor = e.target.value;
@@ -44,36 +45,35 @@
     overlay.style.backgroundImage = patterns[val] || "";
   };
 
-document.getElementById("submit-design").onclick = async () => {
-  const prompt = document.getElementById("design-prompt").value;
-  const color = document.getElementById("color-picker").value;
-  const pattern = document.getElementById("pattern-picker").value;
-  const fullPrompt = `${prompt}. Use color: ${color}, with pattern: ${pattern}`;
+  document.getElementById("submit-design").onclick = async () => {
+    const prompt = document.getElementById("design-prompt").value;
+    const color = document.getElementById("color-picker").value;
+    const pattern = document.getElementById("pattern-picker").value;
+    const fullPrompt = `${prompt}. Use color: ${color}, with pattern: ${pattern}`;
 
-  const overlay = document.getElementById("overlay-box");
-  overlay.innerHTML = "🎨 Generating design...";
+    overlay.innerHTML = "🎨 Generating design...";
 
-  try {
-    const res = await fetch("https://replicate-ai-backend.vercel.app/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ prompt: fullPrompt })
-    });
+    try {
+      const res = await fetch("https://replicate-ai-backend.vercel.app/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: fullPrompt })
+      });
 
-    const data = await res.json();
-    const imageUrl = data?.output?.[0] || data?.image;
+      const data = await res.json();
+      const imageUrl = data?.output?.[0];
 
-    if (imageUrl) {
-      overlay.innerHTML = `<img src="${imageUrl}" alt="Generated Design" style="max-width: 100%; border-radius: 8px;" />`;
-    } else {
-      overlay.innerHTML = "⚠️ No image returned.";
+      if (imageUrl) {
+        preview.src = imageUrl;
+        overlay.innerHTML = "";
+      } else {
+        preview.src = "";
+        preview.alt = "⚠️ No image returned.";
+        overlay.innerHTML = "⚠️ No image returned.";
+      }
+    } catch (err) {
+      console.error(err);
+      overlay.innerHTML = "❌ Failed to generate design.";
     }
-  } catch (err) {
-    console.error(err);
-    overlay.innerHTML = "❌ Failed to generate design.";
-  }
-};
-
+  };
 })();
