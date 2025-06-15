@@ -36,7 +36,7 @@
     const category = document.getElementById("category-input").value.trim();
     const view = document.getElementById("view-selector").value;
 
-    const fullPrompt = `Design a ${category} with ${design}. ${view} view. Studio photo, plain white background. Do not add anything else.`;
+    const fullPrompt = `Design a ${category} with ${design}. ${view} view. Show the full ${category}, clearly centered and fully visible in frame. Studio photo, plain white background. No other objects.`;
 
     overlay.innerHTML = "🎨 Generating design...";
 
