@@ -9,20 +9,18 @@
   root.innerHTML = `
     <h2>🎨 Design Assistant for ${category}</h2>
     <p><strong>Product ID:</strong> ${productId}</p>
-
+    
     <div class="preview">
       <img src="${imageUrl}" alt="Product Preview" id="product-preview" />
       <div id="overlay-box" class="overlay-box"></div>
     </div>
 
     <div class="controls">
-      <input type="text" placeholder="Describe your design (themes, patterns, colors, content)..." id="design-input" />
-
+      <input type="text" placeholder="Design details (themes, patterns, colors...)" id="design-input" />
       <select id="view-picker">
-        <option value="">Select View</option>
-        <option value="front">Front</option>
-        <option value="back">Back</option>
-        <option value="side">Side</option>
+        <option value="front">Front View</option>
+        <option value="back">Back View</option>
+        <option value="side">Side View</option>
       </select>
     </div>
 
@@ -31,13 +29,13 @@
     </div>
   `;
 
+  const overlay = document.getElementById("overlay-box");
+
   document.getElementById("submit-design").onclick = async () => {
     const design = document.getElementById("design-input").value;
     const view = document.getElementById("view-picker").value;
-
     const fullPrompt = `Generate a ${view} view design for a ${category}. Design notes: ${design}`;
 
-    const overlay = document.getElementById("overlay-box");
     overlay.innerHTML = "🎨 Generating design...";
 
     try {
@@ -46,6 +44,13 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: fullPrompt })
       });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("❌ Backend error:", text);
+        overlay.innerHTML = `❌ Failed to generate. ${text}`;
+        return;
+      }
 
       const data = await res.json();
       const imageUrl = data?.output?.[0] || data?.image;
@@ -56,8 +61,8 @@
         overlay.innerHTML = "⚠️ No image returned.";
       }
     } catch (err) {
-      console.error(err);
-      overlay.innerHTML = "❌ Failed to generate design.";
+      console.error("❌ Network or JSON error:", err);
+      overlay.innerHTML = "❌ Network error or timeout.";
     }
   };
 })();
