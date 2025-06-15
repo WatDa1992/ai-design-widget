@@ -9,21 +9,19 @@
   root.innerHTML = `
     <h2>🎨 Design Assistant for ${category}</h2>
     <p><strong>Product ID:</strong> ${productId}</p>
-    
     <div class="preview">
       <img src="${imageUrl}" alt="Product Preview" id="product-preview" />
       <div id="overlay-box" class="overlay-box"></div>
     </div>
-
     <div class="controls">
-      <input type="text" placeholder="Design details (themes, patterns, colors...)" id="design-input" />
+      <input type="text" placeholder="Describe your design (themes, patterns, colors, etc.)" id="design-prompt" />
       <select id="view-picker">
-        <option value="front">Front View</option>
-        <option value="back">Back View</option>
-        <option value="side">Side View</option>
+        <option value="">Choose View</option>
+        <option value="front">Front</option>
+        <option value="back">Back</option>
+        <option value="side">Side</option>
       </select>
     </div>
-
     <div class="footer">
       <button id="submit-design">Submit Design</button>
     </div>
@@ -32,25 +30,20 @@
   const overlay = document.getElementById("overlay-box");
 
   document.getElementById("submit-design").onclick = async () => {
-    const design = document.getElementById("design-input").value;
+    const prompt = document.getElementById("design-prompt").value;
     const view = document.getElementById("view-picker").value;
-    const fullPrompt = `Generate a ${view} view design for a ${category}. Design notes: ${design}`;
+    const fullPrompt = `${prompt}. Show the ${view} view.`;
 
-    overlay.innerHTML = "🎨 Generating design...";
+    overlay.innerHTML = `<div class="loader"></div><p>Generating design...</p>`;
 
     try {
       const res = await fetch("https://replicate-ai-backend.vercel.app/api/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({ prompt: fullPrompt })
       });
-
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("❌ Backend error:", text);
-        overlay.innerHTML = `❌ Failed to generate. ${text}`;
-        return;
-      }
 
       const data = await res.json();
       const imageUrl = data?.output?.[0] || data?.image;
@@ -61,8 +54,8 @@
         overlay.innerHTML = "⚠️ No image returned.";
       }
     } catch (err) {
-      console.error("❌ Network or JSON error:", err);
-      overlay.innerHTML = "❌ Network error or timeout.";
+      console.error(err);
+      overlay.innerHTML = "❌ Failed to generate design.";
     }
   };
 })();
