@@ -2,26 +2,23 @@
   const root = document.getElementById("design-assistant-root");
   if (!root) return;
 
-  const productId = root.dataset.productId;
-  const imageUrl = root.dataset.productImage;
+  // Pull data attributes from HTML container
+  const productId = root.dataset.productId || "12345";
+  const category = root.dataset.category || "product";
 
   root.innerHTML = `
     <h2>🧠 Custom AI Design Assistant</h2>
     <p><strong>Product ID:</strong> ${productId}</p>
-
+    
     <div class="preview">
-      <img src="${imageUrl}" alt="Product Preview" id="product-preview" />
-      <div id="overlay-box" class="overlay-box"></div>
+      <div id="overlay-box" class="overlay-box">
+        <p class="placeholder-text">Your generated design will appear here.</p>
+      </div>
     </div>
 
     <div class="controls">
-      <input type="text" id="category-input" placeholder="What product? (e.g. sneaker, hoodie)" />
-      <input type="text" id="design-prompt" placeholder="What should the design look like?" />
-      <select id="view-selector">
-        <option value="front">Front View</option>
-        <option value="back">Back View</option>
-        <option value="side">Side View</option>
-      </select>
+      <label for="design-prompt"><strong>Design Details</strong></label>
+      <input type="text" placeholder="e.g. floral pattern, sakura blossoms, bold colors" id="design-prompt" />
     </div>
 
     <div class="footer">
@@ -32,13 +29,16 @@
   const overlay = document.getElementById("overlay-box");
 
   document.getElementById("submit-design").onclick = async () => {
-    const design = document.getElementById("design-prompt").value.trim();
-    const category = document.getElementById("category-input").value.trim();
-    const view = document.getElementById("view-selector").value;
+    const prompt = document.getElementById("design-prompt").value;
 
-    const fullPrompt = `Design a ${category} with ${design}. ${view} view. Show the full ${category}, clearly centered and fully visible in frame. Studio photo, plain white background. No other objects.`;
+    if (!prompt.trim()) {
+      overlay.innerHTML = "⚠️ Please enter a design description.";
+      return;
+    }
 
-    overlay.innerHTML = "🎨 Generating design...";
+    const fullPrompt = `A full, centered view of a ${category} on a plain white background, designed with: ${prompt}`;
+
+    overlay.innerHTML = "🎨 Generating design... please wait.";
 
     try {
       const res = await fetch("https://replicate-ai-backend.vercel.app/api/generate", {
