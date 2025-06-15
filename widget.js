@@ -32,7 +32,7 @@
   document.getElementById("submit-design").onclick = async () => {
     const prompt = document.getElementById("design-prompt").value;
     const view = document.getElementById("view-picker").value;
-    const fullPrompt = `${prompt}. Show the ${view} view.`;
+    const fullPrompt = `A studio photo of a plain white ${category} in ${view} view. Apply this design onto the ${category}: ${prompt}. The design should be clearly printed directly onto the ${category}. Plain white background. No text, no extra objects.`;
 
     overlay.innerHTML = `<div class="loader"></div><p>Generating design...</p>`;
 
