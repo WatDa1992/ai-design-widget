@@ -44,10 +44,36 @@
     overlay.style.backgroundImage = patterns[val] || "";
   };
 
-  document.getElementById("submit-design").onclick = () => {
-    const prompt = document.getElementById("design-prompt").value;
-    const color = document.getElementById("color-picker").value;
-    const pattern = document.getElementById("pattern-picker").value;
-    alert("Design submitted!\nPrompt: " + prompt + "\nColor: " + color + "\nPattern: " + pattern);
-  };
+document.getElementById("submit-design").onclick = async () => {
+  const prompt = document.getElementById("design-prompt").value;
+  const color = document.getElementById("color-picker").value;
+  const pattern = document.getElementById("pattern-picker").value;
+  const fullPrompt = `${prompt}. Use color: ${color}, with pattern: ${pattern}`;
+
+  const overlay = document.getElementById("overlay-box");
+  overlay.innerHTML = "🎨 Generating design...";
+
+  try {
+    const res = await fetch("https://replicate-ai-backend.vercel.app/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ prompt: fullPrompt })
+    });
+
+    const data = await res.json();
+    const imageUrl = data?.output?.[0] || data?.image;
+
+    if (imageUrl) {
+      overlay.innerHTML = `<img src="${imageUrl}" alt="Generated Design" style="max-width: 100%; border-radius: 8px;" />`;
+    } else {
+      overlay.innerHTML = "⚠️ No image returned.";
+    }
+  } catch (err) {
+    console.error(err);
+    overlay.innerHTML = "❌ Failed to generate design.";
+  }
+};
+
 })();
