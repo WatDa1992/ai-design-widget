@@ -2,9 +2,7 @@
   const root = document.getElementById("design-assistant-root");
   if (!root) return;
 
-  // Pull data attributes from HTML container
   const productId = root.dataset.productId || "12345";
-  const category = root.dataset.category || "product";
 
   root.innerHTML = `
     <h2>🧠 Custom AI Design Assistant</h2>
@@ -17,6 +15,9 @@
     </div>
 
     <div class="controls">
+      <label for="category-input"><strong>Item Type</strong></label>
+      <input type="text" placeholder="e.g. hoodie, sneaker, cap" id="category-input" />
+
       <label for="design-prompt"><strong>Design Details</strong></label>
       <input type="text" placeholder="e.g. floral pattern, sakura blossoms, bold colors" id="design-prompt" />
     </div>
@@ -29,14 +30,15 @@
   const overlay = document.getElementById("overlay-box");
 
   document.getElementById("submit-design").onclick = async () => {
-    const prompt = document.getElementById("design-prompt").value;
+    const item = document.getElementById("category-input").value.trim() || "product";
+    const design = document.getElementById("design-prompt").value.trim();
 
-    if (!prompt.trim()) {
+    if (!design) {
       overlay.innerHTML = "⚠️ Please enter a design description.";
       return;
     }
 
-    const fullPrompt = `A full, centered view of a ${category} on a plain white background, designed with: ${prompt}`;
+    const fullPrompt = `A full, centered view of a ${item} on a plain white background, designed with: ${design}`;
 
     overlay.innerHTML = "🎨 Generating design... please wait.";
 
