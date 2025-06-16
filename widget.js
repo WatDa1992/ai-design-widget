@@ -1,52 +1,38 @@
+// widget.js — Clean UI for generating standalone art/patterns
 (() => {
   const root = document.getElementById("design-assistant-root");
   if (!root) return;
 
-  const productId = root.dataset.productId || "12345";
-
   root.innerHTML = `
-    <h2>🧠 Custom AI Design Assistant</h2>
-    <p><strong>Product ID:</strong> ${productId}</p>
-    
-    <div class="preview">
-      <div id="overlay-box" class="overlay-box">
-        <p class="placeholder-text">Your generated design will appear here.</p>
-      </div>
-    </div>
+    <h2>🎨 Custom AI Design Assistant</h2>
+    <p>Describe your design idea — we’ll generate a high-quality motif or pattern.</p>
 
     <div class="controls">
-      <label for="category-input"><strong>Item Type</strong></label>
-      <input type="text" placeholder="e.g. hoodie, sneaker, cap" id="category-input" />
-
-      <label for="design-prompt"><strong>Design Details</strong></label>
-      <input type="text" placeholder="e.g. floral pattern, sakura blossoms, bold colors" id="design-prompt" />
+      <input type="text" placeholder="e.g. Floral dragons in Irezumi tattoo style" id="design-prompt" />
+      <button id="submit-design">Generate Pattern</button>
     </div>
 
-    <div class="footer">
-      <button id="submit-design">Submit Design</button>
-    </div>
+    <div id="overlay-box" class="overlay-box">Your design will appear here.</div>
   `;
 
   const overlay = document.getElementById("overlay-box");
 
   document.getElementById("submit-design").onclick = async () => {
-    const item = document.getElementById("category-input").value.trim() || "product";
-    const design = document.getElementById("design-prompt").value.trim();
-
-    if (!design) {
-      overlay.innerHTML = "⚠️ Please enter a design description.";
+    const prompt = document.getElementById("design-prompt").value.trim();
+    if (!prompt) {
+      overlay.innerHTML = "⚠️ Please enter a design prompt.";
       return;
     }
 
-    const fullPrompt = `A full, centered view of a ${item} on a plain white background, designed with: ${design}`;
-
-    overlay.innerHTML = "🎨 Generating design... please wait.";
+    overlay.innerHTML = "⏳ Generating pattern...";
 
     try {
       const res = await fetch("https://replicate-ai-backend.vercel.app/api/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: fullPrompt })
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ prompt })
       });
 
       const data = await res.json();
