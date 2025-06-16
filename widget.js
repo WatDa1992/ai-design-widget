@@ -1,51 +1,84 @@
-// widget.js — Clean UI for generating standalone art/patterns
+// widget.js (full version with Step 2: Apply Pattern to Product Mockup)
 (() => {
   const root = document.getElementById("design-assistant-root");
   if (!root) return;
 
   root.innerHTML = `
-    <h2>🎨 Custom AI Design Assistant</h2>
-    <p>Describe your design idea — we’ll generate a high-quality motif or pattern.</p>
-
+    <h2>🧠 Custom AI Design Assistant</h2>
     <div class="controls">
-      <input type="text" placeholder="e.g. Floral dragons in Irezumi tattoo style" id="design-prompt" />
-      <button id="submit-design">Generate Pattern</button>
+      <input type="text" id="design-prompt" placeholder="Describe your pattern (e.g. flames, peonies, waves)..." />
+      <select id="product-type">
+        <option value="hoodie">Hoodie</option>
+        <option value="shoe">Shoe</option>
+        <option value="cap">Cap</option>
+      </select>
+      <button id="submit-pattern">Generate Pattern</button>
     </div>
-
-    <div id="overlay-box" class="overlay-box">Your design will appear here.</div>
+    <div class="preview">
+      <canvas id="design-canvas" width="512" height="512"></canvas>
+      <p id="status-text"></p>
+    </div>
   `;
 
-  const overlay = document.getElementById("overlay-box");
+  const canvas = document.getElementById("design-canvas");
+  const ctx = canvas.getContext("2d");
+  const statusText = document.getElementById("status-text");
 
-  document.getElementById("submit-design").onclick = async () => {
-    const prompt = document.getElementById("design-prompt").value.trim();
+  document.getElementById("submit-pattern").onclick = async () => {
+    const prompt = document.getElementById("design-prompt").value;
+    const productType = document.getElementById("product-type").value;
+
     if (!prompt) {
-      overlay.innerHTML = "⚠️ Please enter a design prompt.";
+      alert("Please enter a design prompt.");
       return;
     }
 
-    overlay.innerHTML = "⏳ Generating pattern...";
+    statusText.textContent = "🎨 Generating design...";
 
     try {
       const res = await fetch("https://replicate-ai-backend.vercel.app/api/generate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt })
       });
 
       const data = await res.json();
-      const imageUrl = data?.output?.[0] || data?.image;
+      const patternUrl = data?.output?.[0] || data?.image;
 
-      if (imageUrl) {
-        overlay.innerHTML = `<img src="${imageUrl}" alt="Generated Design" style="max-width: 100%; border-radius: 8px;" />`;
-      } else {
-        overlay.innerHTML = "⚠️ No image returned.";
+      if (!patternUrl) {
+        statusText.textContent = "⚠️ No image returned.";
+        return;
       }
+
+      // Load pattern and product template images
+      const [patternImg, productImg] = await Promise.all([
+        loadImage(patternUrl),
+        loadImage(`/mockups/${productType}.png`)
+      ]);
+
+      // Draw product + overlay pattern
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(productImg, 0, 0, canvas.width, canvas.height);
+
+      ctx.globalAlpha = 0.6;
+      ctx.drawImage(patternImg, 0, 0, canvas.width, canvas.height);
+      ctx.globalAlpha = 1;
+
+      statusText.textContent = "✅ Design applied to product.";
+
     } catch (err) {
       console.error(err);
-      overlay.innerHTML = "❌ Failed to generate design.";
+      statusText.textContent = "❌ Failed to generate design.";
     }
   };
+
+  function loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
 })();
